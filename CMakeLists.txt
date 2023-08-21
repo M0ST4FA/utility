@@ -15,5 +15,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # ADD THE TARGETS
-add_library(utility "${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp")
+add_library(utility 
+"${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp" 
+"${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp")
 target_include_directories(utility PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include/")
