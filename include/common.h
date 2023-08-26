@@ -13,6 +13,26 @@ namespace m0st4fa {
 	inline namespace utility {}
 }
 
+// EXCEPTIONS
+namespace m0st4fa::utility {
+
+	struct ConversionError : std::exception {
+
+		std::string msg{};
+
+		const char* what() const noexcept(true) override {
+			return "Conversion error.";
+		}
+
+
+		ConversionError(const std::string& msg)
+			: msg(msg)
+		{
+		}
+	};
+
+}
+
 // CONCEPTS
 namespace m0st4fa::utility {
 
@@ -117,7 +137,6 @@ namespace m0st4fa::utility {
 			return temp += " }";
 		}
 
-
 	template<typename K, typename V>
 	std::string toString(const std::map<K, V>& map) {
 			using MapType = std::map<K, V>;
@@ -138,7 +157,6 @@ namespace m0st4fa::utility {
 
 // INTEGER
 namespace m0st4fa::utility {
-
 
 	/**
 		* extract the first integer from the string and convert it into size_t

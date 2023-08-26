@@ -7,11 +7,10 @@
 #include "common.h"
 #include "Logger.h"
 
-namespace m0st4fa {
+namespace m0st4fa::utility {
 
-	inline namespace utility {
-		// STRING
-		std::string toString(const std::source_location& srcloc, bool full) {
+	// STRING
+	std::string toString(const std::source_location& srcloc, bool full) {
 			std::string msg;
 
 			msg += full ? (srcloc.file_name()) : "";
@@ -21,8 +20,8 @@ namespace m0st4fa {
 			return msg;
 		}
 
-		// INTEGER
-		size_t pow(size_t base, size_t p) {
+	// INTEGER
+	size_t pow(size_t base, size_t p) {
 			if (p == 0)
 				return 1;
 
@@ -34,7 +33,7 @@ namespace m0st4fa {
 			return res;
 		}
 
-		size_t toInteger(const std::string& str, bool atBeginning) {
+	size_t toInteger(const std::string& str, bool atBeginning) {
 			// find the first integer
 			auto itr = std::find_if(str.begin(), str.end(), isalnum);
 
@@ -43,8 +42,8 @@ namespace m0st4fa {
 
 				std::string msg = std::format("Could not convert the string `{}` into integer (Could not even extract an integer from it.)", str);
 
-				logger.log(LoggerInfo::ERR_INVALID_VAL, msg);
-				throw std::logic_error(msg);
+				logger.log(LoggerInfo::ERROR, msg);
+				throw ConversionError{msg};
 			}
 
 			size_t res = 0;
@@ -63,5 +62,5 @@ namespace m0st4fa {
 
 			return res / 10;
 		}
-	}
+
 }
