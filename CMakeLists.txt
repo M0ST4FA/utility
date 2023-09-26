@@ -18,9 +18,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_library(utility 
 "${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp" 
 "${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/ANSI.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/common.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/Logger.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/ANSI.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/common.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/Logger.h"
 )
 target_include_directories(utility PUBLIC 
 "${CMAKE_CURRENT_SOURCE_DIR}/include/")

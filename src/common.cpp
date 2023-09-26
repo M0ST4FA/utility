@@ -4,8 +4,8 @@
 #include <concepts>
 #include <format>
 
-#include "common.h"
-#include "Logger.h"
+#include "utility/common.h"
+#include "utility/Logger.h"
 
 namespace m0st4fa::utility {
 
