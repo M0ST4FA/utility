@@ -1,7 +1,7 @@
 # CMakeList.txt : CMake project for utility, include source and define
 # project specific logic here.
 #
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.26)
 
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
@@ -10,17 +10,19 @@ if (POLICY CMP0141)
 endif()
 
 # DECLARE THE PROJECT
-project ("Utility")
+project ("utility")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+set(${PROJECT_NAME}_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/")
+
 # ADD THE TARGETS
-add_library(utility 
-"${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp" 
-"${CMAKE_CURRENT_SOURCE_DIR}/src/Logger.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/ANSI.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/common.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/include/utility/Logger.h"
+add_library(${PROJECT_NAME} 
+"${PROJECT_SOURCE_DIR}/src/common.cpp" 
+"${PROJECT_SOURCE_DIR}/src/Logger.cpp"
+"${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/ANSI.h"
+"${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/common.h"
+"${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/Logger.h"
 )
-target_include_directories(utility PUBLIC 
-"${CMAKE_CURRENT_SOURCE_DIR}/include/")
+target_include_directories(${PROJECT_NAME} PUBLIC 
+"${${PROJECT_NAME}_INCLUDE_DIR}")
