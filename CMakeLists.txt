@@ -16,6 +16,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(${PROJECT_NAME}_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include/")
 
+# ADD THE DEPENDENCY LIBRARIES
+add_subdirectory("${PROJECT_SOURCE_DIR}/external/fmt")
+add_subdirectory("${PROJECT_SOURCE_DIR}/external/tabulate")
+
 # ADD THE TARGETS
 add_library(${PROJECT_NAME} 
 "${PROJECT_SOURCE_DIR}/src/common.cpp" 
@@ -26,3 +30,4 @@ add_library(${PROJECT_NAME}
 )
 target_include_directories(${PROJECT_NAME} PUBLIC 
 "${${PROJECT_NAME}_INCLUDE_DIR}")
+target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt tabulate::tabulate)

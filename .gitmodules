@@ -1,0 +1,6 @@
+[submodule "external/tabulate"]
+	path = external/tabulate
+	url = https://github.com/p-ranav/tabulate
+[submodule "external/fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt

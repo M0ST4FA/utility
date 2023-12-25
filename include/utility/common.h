@@ -1,12 +1,15 @@
 #pragma once
 #include <string>
 #include <array>
+#include <vector>
 #include <set>
 #include <map>
 #include <type_traits>
 #include <concepts>
 #include <source_location>
 
+#include "fmt/ranges.h"
+#include "tabulate/table.hpp"
 #include "ANSI.h"
 
 namespace m0st4fa {
@@ -151,7 +154,83 @@ namespace m0st4fa::utility {
 		};
 
 	std::string toString(const std::source_location&, bool = false);
-			
+	
+	/**
+	 * @brief Formats a 2D table as a string.
+	 * @param table2D The 2D table to be formatted as a string.
+	 * @param getNonEmptyColumns A function that should filter columns according to which one is empty and which is not. The criterion is defined by this callback function itself. Empty columns will not be exist in the formatted table.
+	 * @return A string representation of `table2D`.
+	 */
+	template<typename E>
+	std::string toString(const std::vector<std::vector<E>>& table2D, std::function<std::vector<bool>(const std::vector<std::vector<E>>&, const size_t)> getNonEmptyColumns) {
+
+		using TableType = const std::vector<std::vector<E>>;
+
+		using namespace tabulate;
+
+		// Helper lambdas
+		auto get_column_sizes = [](const TableType& table) {
+			std::vector<size_t> columnSizes{};
+			for (const auto& row : table) {
+				columnSizes.push_back(row.size());
+			}
+
+			return columnSizes;
+			};
+		auto filter_columns = [&table2D](const size_t maxColSize, const std::vector<bool>& colStatus, const TableType& fmtTable) {
+
+			using namespace tabulate;
+
+			Table::Row_t headerRow{};
+			// Fill the first row (the header row)
+			for (size_t col = 0; col < colStatus.size(); col++) {
+				bool status = colStatus.at(col);
+
+				// if the columns is empty
+				if (status == false)
+					continue;
+
+				// the columns is filled
+				headerRow.push_back(std::string{ char(col) });
+			}
+
+			fmtTable.add_row(headerRow);
+			fmtTable.row(0).format().font_style({ tabulate::FontStyle::bold }).font_color(Color::cyan);
+
+			// Fill the rest of rows
+			for (const auto& row : table2D) {
+
+				if (row.size() == 0)
+					continue;
+
+				Table::Row_t newRow{};
+				for (size_t col = 0; col < maxColSize; col++)
+					if (colStatus.at(col))
+						newRow.push_back(fmt::format("{}", row.at(col)));
+
+				fmtTable.add_row(newRow);
+			}
+
+			};
+
+		Table table{};
+
+		if (this->size() == 0)
+			return table.str();
+
+		// Identify non-empty columns
+		std::vector<size_t> columnSizes = get_column_sizes(table2D);
+		const size_t maxColSize = *std::max_element(columnSizes.cbegin(), columnSizes.cend());
+
+		// sets a `true` where a column is non-empty
+		std::vector<bool> nonEmptyColumns = getNonEmptyColumns(maxColSize);
+
+		// Filter out columns from each row and construct the rows
+		filter_columns(maxColSize, nonEmptyColumns, table);
+
+		return table.str();
+
+	};
 
 }
 
