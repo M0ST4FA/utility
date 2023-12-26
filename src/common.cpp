@@ -42,7 +42,7 @@ namespace m0st4fa::utility {
 
 				std::string msg = std::format("Could not convert the string `{}` into integer (Could not even extract an integer from it.)", str);
 
-				logger.log(LoggerInfo::ERROR, msg);
+				logger.log(LoggerInfo::LL_ERROR, msg);
 				throw ConversionError{msg};
 			}
 

@@ -177,7 +177,7 @@ namespace m0st4fa::utility {
 
 			return columnSizes;
 			};
-		auto filter_columns = [&table2D](const size_t maxColSize, const std::vector<bool>& colStatus, const TableType& fmtTable) {
+		auto filter_columns = [&table2D](const size_t maxColSize, const std::vector<bool>& colStatus, Table& fmtTable) {
 
 			using namespace tabulate;
 
@@ -213,22 +213,22 @@ namespace m0st4fa::utility {
 
 			};
 
-		Table table{};
+		Table fmtTable{};
 
-		if (this->size() == 0)
-			return table.str();
+		if (table2D.size() == 0)
+			return fmtTable.str();
 
 		// Identify non-empty columns
 		std::vector<size_t> columnSizes = get_column_sizes(table2D);
 		const size_t maxColSize = *std::max_element(columnSizes.cbegin(), columnSizes.cend());
 
 		// sets a `true` where a column is non-empty
-		std::vector<bool> nonEmptyColumns = getNonEmptyColumns(maxColSize);
+		std::vector<bool> nonEmptyColumns = getNonEmptyColumns(table2D, maxColSize);
 
 		// Filter out columns from each row and construct the rows
-		filter_columns(maxColSize, nonEmptyColumns, table);
+		filter_columns(maxColSize, nonEmptyColumns, fmtTable);
 
-		return table.str();
+		return fmtTable.str();
 
 	};
 

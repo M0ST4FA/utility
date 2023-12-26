@@ -17,7 +17,7 @@ namespace m0st4fa {
 		UnknownLogLevel() = default;
 
 		const char* what() const noexcept(true) override {
-			return "Unknown log level. Make sure you used one of the following log levels: FATAL_ERROR, ERROR, WARRNING, INFO or DEBUG.";
+			return "Unknown log level. Make sure you used one of the following log levels: LL_FATAL_ERROR, LL_ERROR, LL_WARNING, LL_INFO or LL_DEBUG.";
 		}
 
 	};
@@ -40,7 +40,7 @@ namespace m0st4fa {
 	struct LoggerInfo {
 		LOG_LEVEL level;
 
-		static const LoggerInfo ERROR, WARNING, INFO, DEBUG, FATAL_ERROR;
+		static const LoggerInfo LL_ERROR, LL_WARNING, LL_INFO, LL_DEBUG, LL_FATAL_ERROR;
 	};
 	
 	class Logger {

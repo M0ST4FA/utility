@@ -72,10 +72,10 @@ namespace m0st4fa {
 // DEFINITIONS
 namespace m0st4fa {
 
-	const LoggerInfo LoggerInfo::DEBUG = { LOG_LEVEL::LL_DEBUG };
-	const LoggerInfo LoggerInfo::ERROR = { LOG_LEVEL::LL_ERROR };
-	const LoggerInfo LoggerInfo::FATAL_ERROR = { LOG_LEVEL::LL_FATAL_ERROR };
-	const LoggerInfo LoggerInfo::INFO = { LOG_LEVEL::LL_INFO };
-	const LoggerInfo LoggerInfo::WARNING = { LOG_LEVEL::LL_WARRNING };
+	const LoggerInfo LoggerInfo::LL_DEBUG = { LOG_LEVEL::LL_DEBUG };
+	const LoggerInfo LoggerInfo::LL_ERROR = { LOG_LEVEL::LL_ERROR };
+	const LoggerInfo LoggerInfo::LL_FATAL_ERROR = { LOG_LEVEL::LL_FATAL_ERROR };
+	const LoggerInfo LoggerInfo::LL_INFO = { LOG_LEVEL::LL_INFO };
+	const LoggerInfo LoggerInfo::LL_WARNING = { LOG_LEVEL::LL_WARRNING };
 
 }
