@@ -19,6 +19,9 @@ namespace m0st4fa {
 // EXCEPTIONS
 namespace m0st4fa::utility {
 
+	/**
+	 * @brief An exception to be thrown by a conversion function in case it failed to convert an object to another.
+	 */
 	struct ConversionError : std::exception {
 
 		std::string msg{};
@@ -39,8 +42,17 @@ namespace m0st4fa::utility {
 // CONCEPTS
 namespace m0st4fa::utility {
 
+	/**
+	 * @brief Checks whether an object of type `T` is convertible to string by having an `operator std::string` conversion function.
+	 * @tparam T The type of the object to be checked.
+	 */
 	template <typename T>
 	concept ConvertableToString = std::is_convertible_v<T, std::string>;
+
+	/**
+	 * @brief Checks whether a numerical object of type `T` is convertible to string via the `std::to_string` function.
+	 * @tparam T The type of the numerical object to be checked.
+	 */
 	template <typename T>
 	concept NumConvertableToString = requires (T a) { std::to_string(a); };
 
@@ -49,8 +61,15 @@ namespace m0st4fa::utility {
 // STRING
 namespace m0st4fa::utility {
 
+	/**
+	 * @brief Converts general iterables to strings (overload for objects convertible to strings by calling `std::string`).
+	 * @attention The elements of the iterable must be convertible to strings.
+	 * @tparam T The type of the iterable.
+	 * @param[in] iterable The iterable to be converted to a string.
+	 * @param[in] asList Whether or not to format the iterable graphically as a list. If set to false, each element appears on a new line.
+	 * @return The string representation of the iterable.
+	 */
 	template <typename T>
-	// require the object to be iterable and its elements be convertible to strings
 		requires requires (T iterable) {
 				{*iterable.begin()} -> ConvertableToString;
 		}
@@ -77,8 +96,16 @@ namespace m0st4fa::utility {
 			return temp += " }";
 		}
 
+	/**
+	 * @brief Converts general iterables to strings (overload for objects convertible to string by calling `std::to_string`, i.e., mostly numbers).
+	 * @attention The elements of the iterable must be convertible to strings.
+	 * @todo Imposing the constraint is not complete (what do you mean by "convertible to strings"? How does the function handle this?).
+	 * @tparam T The type of the iterable.
+	 * @param[in] iterable The iterable to be converted to a string.
+	 * @param[in] asList Whether or not to format the iterable graphically as a list. If set to false, each element appears on a new line.
+	 * @return The string representation of the iterable.
+	 */
 	template <typename T>
-	// require the object to be iterable and its elements be convertible to strings
 		requires requires (T iterable) {
 				{*iterable.begin()} -> NumConvertableToString;
 		}
@@ -105,7 +132,17 @@ namespace m0st4fa::utility {
 			return temp += " }";
 		}
 
-	// require the object to be a 2D array and its elements be convertible to strings
+	/**
+	 * @brief Converts a 2D array to a string.
+	 * @attention The elements of the array must be convertible to strings.
+	 * @tparam T The type of objects of the 2D array.
+	 * @tparam xdim The size of the first dimension (x dimension).
+	 * @tparam ydim The size of the second dimension (y dimension).
+	 * @param[in] array The 2D array to be converted.
+	 * @param[in] asList Whether or not to format the array graphically as a list. If set to false, each element appears on a new line.
+	 * @returns The string representation of `array`.
+	 * 
+	 */
 	template <NumConvertableToString T, size_t xdim, size_t ydim>
 	std::string toString(const std::array<std::array<T, ydim>, xdim>& array, bool asList = true) {
 			std::string separator = asList ? ", " : "\n";
@@ -140,6 +177,13 @@ namespace m0st4fa::utility {
 			return temp += " }";
 		}
 
+	/**
+	 * @brief Converts a map to a string.
+	 * @param[in] map The map to be converted to a string.
+	 * @tparam K The type of map keys.
+	 * @tparam V The type of map values.
+	 * @return The string representation of `map`.
+	 */
 	template<typename K, typename V>
 	std::string toString(const std::map<K, V>& map) {
 			using MapType = std::map<K, V>;
@@ -156,9 +200,10 @@ namespace m0st4fa::utility {
 	std::string toString(const std::source_location&, bool = false);
 	
 	/**
-	 * @brief Formats a 2D table as a string.
-	 * @param table2D The 2D table to be formatted as a string.
-	 * @param getNonEmptyColumns A function that should filter columns according to which one is empty and which is not. The criterion is defined by this callback function itself. Empty columns will not be exist in the formatted table.
+	 * @brief Formats a 2D table (represented by vectors) as a string.
+	 * @tparam E The type of objects within the 2D table.
+	 * @param[in] table2D The 2D table to be formatted as a string.
+	 * @param[in] getNonEmptyColumns A function that should filter columns according to which one is empty and which is not. The criterion is defined by this callback function itself. Empty columns will not exist in the formatted table.
 	 * @return A string representation of `table2D`.
 	 */
 	template<typename E>
@@ -237,11 +282,9 @@ namespace m0st4fa::utility {
 // INTEGER
 namespace m0st4fa::utility {
 
-	/**
-		* extract the first integer from the string and convert it into size_t
-		* the integer may not necessarily be at the beginning except if the boolean is set.
-		*/
-	size_t toInteger(const std::string&, bool = false);
+	
+	size_t toInteger(const std::string&);
+
 	size_t pow(size_t, size_t);
 
 }
@@ -250,8 +293,14 @@ namespace m0st4fa::utility {
 namespace m0st4fa::utility {
 
 	/**
-	* Inserts elements from `from` to `to` except any element that equals `except`
-	* If the type of `except` is nullptr_t, it is ignored and all elements are added
+	* @brief Inserts elements from an iterable to another, filtering for some element (avoiding its insertion).
+	* @tparam IterableT The type of both iterables (the iterable to insert from and the one to insert to).
+	* @attention `IterableT` must have a method named `insert`.
+	* @tparam ExceptT The type of the object to filter by. This object will never be inserted from `from` to `to`.
+	* @note If the type of `except` is nullptr_t, it is ignored and all elements are added.
+	* @param[in] from The iterable whose elements will be inserted to `to`.
+	* @param[out] to The iterable into which `from` elements will be inserted.
+	* @return `true` if at least one element has been inserted from `from` into `to`; `false` otherwise.
 	*/
 	template <typename IterableT, typename ExceptT>
 	bool insertAndAssert(const IterableT& from, IterableT& to, ExceptT except) {
@@ -270,6 +319,14 @@ namespace m0st4fa::utility {
 			return added;
 		};
 
+	/**
+	* @brief Inserts elements from an iterable to another.
+	* @tparam IterableT The type of both iterables (the iterable to insert from and the one to insert to).
+	* @attention `IterableT` must have a method named `insert`.
+	* @param[in] from The iterable whose elements will be inserted to `to`.
+	* @param[out] to The iterable into which `from` elements will be inserted.
+	* @return `true` if at least one element has been inserted from `from` into `to`; `false` otherwise.
+	*/
 	template <typename IterableT>
 	bool insertAndAssert(const IterableT& from, IterableT& to) {
 			bool added = false;
@@ -284,6 +341,15 @@ namespace m0st4fa::utility {
 			return added;
 		};
 
+	/**
+	 * @brief Checks for whether a given element is in (is an element of) a given iterable. 
+	 * @details Intended to implement the "containment/is element of" operator in set theory.
+	 * @tparam ElementT The type of the element to check for whether it exists in `iterable` or not.
+	 * @tparam IterableT The type of the iterable that will be checked for containment of `element`.
+	 * @param[in] element The element whose existence in `iterable` will be checked.
+	 * @param[in] iterable The iterable that will be checked for containment of `element`.
+	 * @return `true` if `element` is in iterable; `false` otherwise.
+	 */
 	template <typename ElementT, typename IterableT>
 	bool isIn(const ElementT element, const IterableT& iterable) {
 			for (const ElementT& e : iterable)
@@ -294,11 +360,19 @@ namespace m0st4fa::utility {
 		}
 
 	/**
-		* works with iterables that have method `contains`
-		*/
+	* @brief Checks for whether two iterables are "equal".
+	* @details The definition of equality of iterables used by this function is the same as that in set theory (assuming the iterables are sets). Two iterables are equal iff every element in one of them is an element in the other.
+	* @attention Works only with iterables that have method `contains`.
+	* @attention Elements of the iterable must support comparison using "==".
+	* @tparam IterableT The type of the iterables to be compared.
+	* @param[in] lhs The left-hand-side of the equality.
+	* @param[in] rhs The right-hand-side of the equality.
+	* @return `true` if both iterables are equal; `false` otherwise.
+	*/
 	template<typename IterableT>
 		requires requires (IterableT a) {
 			a.contains(*a.begin());
+			a.at(0) == a.at(1);
 		}
 	bool operator==(const IterableT& lhs, const IterableT& rhs) {
 			// if they do not have the same size, they are not coequal
@@ -319,15 +393,25 @@ namespace m0st4fa::utility {
 				return false;
 			}
 
+			// Note: we don't need to check for the other direction because we've already checked that they have the same number of elements.
+
 			return true;
 		};
 
 	/**
-		* works with iterables that do not have method `contains`, but that have method `at`
-		*/
+	* @brief Checks for whether two iterables are "equal".
+	* @details The definition of equality of iterables used by this function is the same as that in set theory (assuming the iterables are sets). Two iterables are equal iff every element in one of them is an element in the other.
+	* @note This is an overload that works with iterables that don't have the method `contains`.
+	* @attention Elements of the iterable must support comparison using "==".
+	* @tparam IterableT The type of the iterables to be compared.
+	* @param[in] lhs The left-hand-side of the equality.
+	* @param[in] rhs The right-hand-side of the equality.
+	* @return `true` if both iterables are equal; `false` otherwise.
+	*/
 	template<typename IterableT>
 		requires requires (IterableT a) {
 			a.at(0);
+			a.at(0) == a.at(1);
 		}
 	bool operator==(const IterableT& lhs, const IterableT& rhs) {
 			const size_t lhsSize = lhs.size();
@@ -356,19 +440,32 @@ namespace m0st4fa::utility {
 
 }
 
-// RANGES
+// INTERVALS
 namespace m0st4fa::utility {
 
+	/**
+	 * @brief Checks for whether `element` is within (an element of) the interval `(lb, ub)` or `[lb, ub]`.
+	 * @tparam T The type of the objects contained in the interval. These must support comparison.
+	 * @attention The objects in the interval must support comparison.
+	 * @note The word "interval" as used here in this context is very general. It doesn't refer only to a subset of real numbers, however, it is more general and can refer, for example, to subsets of integers.
+	 * @param[in] element The element that will be checked for falling within a given range.
+	 * @param[in] lb The lower bound of the interval.
+	 * @param[in] ub The upper bound of the interval.
+	 * @param[in] closed Whether the interval is closed or not.
+	 * @return `true` if `element` falls within range; `false` otherwise.
+	 */
 	template<typename T>
 		requires requires(T a, T b) {
 			a < b;
 			a > b;
+			a >= b;
+			a <= b;
 		}
-	inline bool withinRange(T element, T b1, T b2, bool inclusive = false) {
-			if (inclusive)
-				return (element >= b1 && element <= b2);
+	inline bool withinInterval(T element, T lb, T ub, bool closed = false) {
+		if (closed)
+			return (element >= lb && element <= ub);
 
-			return (element > b1 && element < b2);
-		};
+		return (element > lb && element < ub);
+	};
 
 }

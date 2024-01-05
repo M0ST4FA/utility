@@ -31,3 +31,7 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC 
 "${${PROJECT_NAME}_INCLUDE_DIR}")
 target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt tabulate::tabulate)
+
+if (${BUILD_EXAMPLES})
+  add_subdirectory("${PROJECT_SOURCE_DIR}/docs/")
+endif()
