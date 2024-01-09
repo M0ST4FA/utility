@@ -29,8 +29,8 @@ if (${DOXYGEN_FOUND})
 	set( DOXYGEN_DOT_TRANSPARENT YES )
 	set( DOXYGEN_GENERATE_XML YES)
 	set( DOXYGEN_EXCLUDE_PATTERNS 
-	"*/docs/*" 
-	"*/tests/*" 
+	"*/docs/*"
+	"*/tests/*"
 	"*/utility/*"
 	"*/out/*"
 	"*/examples/*"
@@ -40,7 +40,7 @@ if (${DOXYGEN_FOUND})
 	doxygen_add_docs(docs_${PROJECT_NAME} ${CMAKE_SOURCE_DIR})
 	execute_process(
 	COMMAND	"./${DOXYGEN_EXECUTABLE}" 
-		"${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile.docs_${PROJECT_NAME}"
+		"${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile.docs_${PROJECT_NAME}.in"
 	)
 
 	configure_file(
@@ -48,7 +48,7 @@ if (${DOXYGEN_FOUND})
 		"${PROJECT_SOURCE_DIR}/docs/Sphinx/conf.py"
 	)
 
-	set(DOXYGEN_CONFIGURATION_FILE "${PROJECT_BINARY_DIR}/docs/Doxyfile.docs_${PROJECT_NAME}")
+	set(DOXYGEN_CONFIGURATION_FILE "${DOXYGEN_OUTPUT_DIRECTORY}/Doxyfile.docs_${PROJECT_NAME}")
 	add_custom_target(Doxygen_${PROJECT_NAME} ALL
 	COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CONFIGURATION_FILE}
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
