@@ -6,13 +6,21 @@
 Welcome to utility's documentation!
 ===================================
 
+This is a library that contains serveral useful utility functions.
+
 API
 ---
 
 .. toctree::
    :maxdepth: 2
 
-   
+   API/ANSI
+   API/concepts
+   API/exceptions
+   API/string
+   API/integer
+   API/iterable
+   API/interval
 
 
 Indices and tables

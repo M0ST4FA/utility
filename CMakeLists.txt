@@ -10,7 +10,11 @@ if (POLICY CMP0141)
 endif()
 
 # DECLARE THE PROJECT
-project ("utility")
+project ("utility" 
+		VERSION 1.0.0
+		DESCRIPTION "A number of general-purpose utility functions, concepts and constants."
+		LANGUAGES CXX C
+)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
@@ -21,7 +25,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/external/fmt")
 add_subdirectory("${PROJECT_SOURCE_DIR}/external/tabulate")
 
 # ADD THE TARGETS
-add_library(${PROJECT_NAME} 
+add_library(${PROJECT_NAME}
 "${PROJECT_SOURCE_DIR}/src/common.cpp" 
 "${PROJECT_SOURCE_DIR}/src/Logger.cpp"
 "${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/ANSI.h"
@@ -31,9 +35,6 @@ add_library(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC 
 "${${PROJECT_NAME}_INCLUDE_DIR}")
 target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt tabulate::tabulate)
-
-add_executable(main main.cpp)
-target_link_libraries(main PUBLIC ${PROJECT_NAME})
 
 if (${BUILD_DOCUMENTATION})
 	add_subdirectory("${PROJECT_SOURCE_DIR}/docs/")

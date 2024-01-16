@@ -12,6 +12,7 @@
 #include "tabulate/table.hpp"
 #include "ANSI.h"
 
+// DECLARATION OF utility NAMESPACE (AS INLINE)
 namespace m0st4fa {
 	inline namespace utility {}
 }
@@ -50,11 +51,38 @@ namespace m0st4fa::utility {
 	concept ConvertableToString = std::is_convertible_v<T, std::string>;
 
 	/**
+	 * @brief Checks whether an object of type `T` is convertible to string by calling a function named `stringfy`.
+	 * @tparam T The type of the object to be checked.
+	 */
+	template <typename T>
+	concept Stringfyble = requires (T a) {
+		stringfy(a);
+	};
+
+	/**
 	 * @brief Checks whether a numerical object of type `T` is convertible to string via the `std::to_string` function.
 	 * @tparam T The type of the numerical object to be checked.
 	 */
 	template <typename T>
 	concept NumConvertableToString = requires (T a) { std::to_string(a); };
+
+	/**
+	 * @brief Checks for whether an iterable has a method named `contains`.
+	 * @tparam T The type of the iterable object to be checked.
+	 */
+	template <typename T>
+	concept HasContains = requires (T iterable) { 
+		iterable.contains(iterable.at(0)); 
+	};
+
+	///**
+	// * @brief Checks whether an object type `T` supports comparison with less than operator (<).
+	// * @tparam T The type of the object to be checked.
+	// */
+	//template <typename T>
+	//concept HasLessThan = requires (T a, T b) {
+	//	a < b;
+	//};
 
 }
 
@@ -62,7 +90,7 @@ namespace m0st4fa::utility {
 namespace m0st4fa::utility {
 
 	/**
-	 * @brief Converts general iterables to strings (overload for objects convertible to strings by calling `std::string`).
+	 * @brief Converts general iterables to strings.
 	 * @attention The elements of the iterable must be convertible to strings.
 	 * @tparam T The type of the iterable.
 	 * @param[in] iterable The iterable to be converted to a string.
@@ -70,67 +98,40 @@ namespace m0st4fa::utility {
 	 * @return The string representation of the iterable.
 	 */
 	template <typename T>
-		requires requires (T iterable) {
-				{*iterable.begin()} -> ConvertableToString;
-		}
 	std::string toString(const T& iterable, bool asList = true) {
-			std::string separator = asList ? ", " : "\n";
+		using ElementType = decltype(T{}.at(0));
 
-			std::string temp = "{ ";
+		std::string separator = asList ? ", " : "\n";
 
-			if (iterable.empty())
-				return temp += " }";
+		std::string temp = "{ ";
 
+		if (iterable.empty())
+			return temp += " }";
+
+		if constexpr (NumConvertableToString<ElementType>)
+			temp += std::to_string(*iterable.begin());
+		else if (Stringfyble<ElementType>)
+			temp += stringfy(*iterable.begin());
+		else
 			temp += (std::string)*iterable.begin();
 
-			for (size_t i = 0; const auto & element : iterable) {
-				// skip the first element
-				if (!i) {
-					i++;
-					continue;
-				}
-
-				temp += separator + (std::string)element;
+		for (size_t i = 0; const auto & element : iterable) {
+			// skip the first element
+			if (!i) {
+				i++;
+				continue;
 			}
 
-			return temp += " }";
-		}
-
-	/**
-	 * @brief Converts general iterables to strings (overload for objects convertible to string by calling `std::to_string`, i.e., mostly numbers).
-	 * @attention The elements of the iterable must be convertible to strings.
-	 * @todo Imposing the constraint is not complete (what do you mean by "convertible to strings"? How does the function handle this?).
-	 * @tparam T The type of the iterable.
-	 * @param[in] iterable The iterable to be converted to a string.
-	 * @param[in] asList Whether or not to format the iterable graphically as a list. If set to false, each element appears on a new line.
-	 * @return The string representation of the iterable.
-	 */
-	template <typename T>
-		requires requires (T iterable) {
-				{*iterable.begin()} -> NumConvertableToString;
-		}
-	std::string toString(const T& iterable, bool asList = true) {
-			std::string separator = asList ? ", " : "\n";
-
-			std::string temp = "{ ";
-
-			if (iterable.empty())
-				return temp += " }";
-
-			temp += std::to_string(*iterable.begin());
-
-			for (size_t i = 0; const auto & element : iterable) {
-				// skip the first element
-				if (-not i) {
-					i++;
-					continue;
-				}
-
+			if constexpr (NumConvertableToString<ElementType>)
 				temp += separator + std::to_string(element);
-			}
-
-			return temp += " }";
+			else if (Stringfyble<ElementType>)
+				temp += separator + stringfy(element);
+			else
+				temp += separator + (std::string)element;
 		}
+
+		return temp += " }";
+	}
 
 	/**
 	 * @brief Converts a 2D array to a string.
@@ -167,7 +168,7 @@ namespace m0st4fa::utility {
 						continue;
 					}
 
-					temp += std::format("[{}][{}] = {}\n", x, y, subarr.at(y));
+					temp += fmt::format("[{}][{}] = {}\n", x, y, subarr.at(y));
 					y++;
 				}
 
@@ -192,7 +193,7 @@ namespace m0st4fa::utility {
 			for (const auto& pair : map)
 				// FORMAT:
 				// Key : Value
-				res += std::format("{} : {}\n", pair.first, toString(pair.second));
+				res += fmt::format("{} : {}\n", pair.first, toString(pair.second));
 
 			return res;
 		};
@@ -360,9 +361,8 @@ namespace m0st4fa::utility {
 		}
 
 	/**
-	* @brief Checks for whether two iterables are "equal".
-	* @details The definition of equality of iterables used by this function is the same as that in set theory (assuming the iterables are sets). Two iterables are equal iff every element in one of them is an element in the other.
-	* @attention Works only with iterables that have method `contains`.
+	* @brief Checks for whether two iterables are "equal" as in set theory.
+	* @details The definition of equality of iterables used by this function is the same as that in set theory (assuming the iterables are sets). Two iterables are equal iff every element in one of them is an element in the other. The order is not important here.
 	* @attention Elements of the iterable must support comparison using "==".
 	* @tparam IterableT The type of the iterables to be compared.
 	* @param[in] lhs The left-hand-side of the equality.
@@ -371,15 +371,19 @@ namespace m0st4fa::utility {
 	*/
 	template<typename IterableT>
 		requires requires (IterableT a) {
-			a.contains(*a.begin());
 			a.at(0) == a.at(1);
 		}
 	bool operator==(const IterableT& lhs, const IterableT& rhs) {
-			// if they do not have the same size, they are not coequal
-			if (lhs.size() != rhs.size())
-				return false;
 
-			// if they have the same number of elements
+		const size_t lhsSize = lhs.size();
+		const size_t rhsSize = rhs.size();
+
+		// if they have different sizes, they are not equal
+		if (lhsSize != rhsSize)
+			return false;
+
+		// if they have the same number of elements
+		if constexpr (HasContains<IterableT>) {
 
 			// if, for every element `a` in `lhs`, `a` is also an element
 			// of `rhs`, then they are coequal
@@ -393,50 +397,32 @@ namespace m0st4fa::utility {
 				return false;
 			}
 
-			// Note: we don't need to check for the other direction because we've already checked that they have the same number of elements.
-
-			return true;
-		};
-
-	/**
-	* @brief Checks for whether two iterables are "equal".
-	* @details The definition of equality of iterables used by this function is the same as that in set theory (assuming the iterables are sets). Two iterables are equal iff every element in one of them is an element in the other.
-	* @note This is an overload that works with iterables that don't have the method `contains`.
-	* @attention Elements of the iterable must support comparison using "==".
-	* @tparam IterableT The type of the iterables to be compared.
-	* @param[in] lhs The left-hand-side of the equality.
-	* @param[in] rhs The right-hand-side of the equality.
-	* @return `true` if both iterables are equal; `false` otherwise.
-	*/
-	template<typename IterableT>
-		requires requires (IterableT a) {
-			a.at(0);
-			a.at(0) == a.at(1);
 		}
-	bool operator==(const IterableT& lhs, const IterableT& rhs) {
-			const size_t lhsSize = lhs.size();
-			const size_t rhsSize = rhs.size();
-
-			// if they have different sizes, they are not equal
-			if (lhsSize != rhsSize)
-				return false;
-
+		else {
 			// if there exists at least a single element in `lhs`
-			// that does not exist in `rhs`, in order, they are not equal
+			// that does not exist in `rhs`, they are not equal
 			for (size_t i = 0; i < lhsSize; i++) {
 				const auto& lhsElement = lhs.at(i);
-				const auto& rhsElement = rhs.at(i);
 
-				// if the current elements in each prod body are not equal,
-				// the two productions are not equal
-				if (lhsElement != rhsElement)
-					return false;
+				for (size_t j = 0; j < rhsSize; j++) {
+					const auto& rhsElement = rhs.at(j);
+
+					// if the current elements are not equal, the two sets are unequal
+					if (lhsElement == rhsElement)
+						break;
+
+
+					if (j == rhsSize - 1)
+						return false;
+				}
+
 			}
-
-			// if we reach here, it means the two iterables are not `not-equal`
-			// hence they must be equal
-			return true;
 		}
+
+		// if we reach here, it means the two iterables are not `not-equal`
+		// hence they must be equal
+		return true;
+	}
 
 }
 
