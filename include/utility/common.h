@@ -50,6 +50,13 @@ namespace m0st4fa::utility {
 	concept ConvertableToString = std::is_convertible_v<T, std::string>;
 
 	/**
+	 * @brief Checks whether an object of type `T` is convertible to string by calling a function named `stringfy`.
+	 * @tparam T The type of the object to be checked.
+	 */
+	template <typename T>
+	concept Stringfyble = requires (T a) { stringfy(a); };
+
+	/**
 	 * @brief Checks whether a numerical object of type `T` is convertible to string via the `std::to_string` function.
 	 * @tparam T The type of the numerical object to be checked.
 	 */
@@ -62,7 +69,7 @@ namespace m0st4fa::utility {
 namespace m0st4fa::utility {
 
 	/**
-	 * @brief Converts general iterables to strings (overload for objects convertible to strings by calling `std::string`).
+	 * @brief Converts general iterables to strings.
 	 * @attention The elements of the iterable must be convertible to strings.
 	 * @tparam T The type of the iterable.
 	 * @param[in] iterable The iterable to be converted to a string.
@@ -70,9 +77,6 @@ namespace m0st4fa::utility {
 	 * @return The string representation of the iterable.
 	 */
 	template <typename T>
-		requires requires (T iterable) {
-				{*iterable.begin()} -> ConvertableToString;
-		}
 	std::string toString(const T& iterable, bool asList = true) {
 			std::string separator = asList ? ", " : "\n";
 
@@ -81,7 +85,12 @@ namespace m0st4fa::utility {
 			if (iterable.empty())
 				return temp += " }";
 
-			temp += (std::string)*iterable.begin();
+			if constexpr (NumConvertableToString<T>)
+				temp += std::to_string(*iterable.begin());
+			else if (Stringfyble<T>)
+				temp += stringfy(*iterable.begin());
+			else
+				temp += (std::string)*iterable.begin();
 
 			for (size_t i = 0; const auto & element : iterable) {
 				// skip the first element
@@ -90,43 +99,12 @@ namespace m0st4fa::utility {
 					continue;
 				}
 
-				temp += separator + (std::string)element;
-			}
-
-			return temp += " }";
-		}
-
-	/**
-	 * @brief Converts general iterables to strings (overload for objects convertible to string by calling `std::to_string`, i.e., mostly numbers).
-	 * @attention The elements of the iterable must be convertible to strings.
-	 * @todo Imposing the constraint is not complete (what do you mean by "convertible to strings"? How does the function handle this?).
-	 * @tparam T The type of the iterable.
-	 * @param[in] iterable The iterable to be converted to a string.
-	 * @param[in] asList Whether or not to format the iterable graphically as a list. If set to false, each element appears on a new line.
-	 * @return The string representation of the iterable.
-	 */
-	template <typename T>
-		requires requires (T iterable) {
-				{*iterable.begin()} -> NumConvertableToString;
-		}
-	std::string toString(const T& iterable, bool asList = true) {
-			std::string separator = asList ? ", " : "\n";
-
-			std::string temp = "{ ";
-
-			if (iterable.empty())
-				return temp += " }";
-
-			temp += std::to_string(*iterable.begin());
-
-			for (size_t i = 0; const auto & element : iterable) {
-				// skip the first element
-				if (-not i) {
-					i++;
-					continue;
-				}
-
-				temp += separator + std::to_string(element);
+				if constexpr (NumConvertableToString<T>)
+					temp += separator + std::to_string(element);
+				else if (Stringfyble<T>)
+					temp += separator + stringfy(element);
+				else
+					temp += separator + (std::string)element;
 			}
 
 			return temp += " }";
