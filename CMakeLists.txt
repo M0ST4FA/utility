@@ -39,3 +39,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC fmt::fmt tabulate::tabulate)
 if (${BUILD_DOCUMENTATION})
 	add_subdirectory("${PROJECT_SOURCE_DIR}/docs/")
 endif()
+
+if (${BUILD_TESTING})
+	add_subdirectory("${PROJECT_SOURCE_DIR}/tests")
+endif()
