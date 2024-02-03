@@ -33,3 +33,4 @@
 
 # Sphinx
 docs/Sphinx/build/
+*conf.py*

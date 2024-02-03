@@ -202,77 +202,91 @@ namespace m0st4fa::utility {
 	
 	/**
 	 * @brief Formats a 2D table (represented by vectors) as a string.
+	 * @todo Make this more general. Now it is designed to convert only FSMTable objects.
 	 * @tparam E The type of objects within the 2D table.
 	 * @param[in] table2D The 2D table to be formatted as a string.
-	 * @param[in] getNonEmptyColumns A function that should filter columns according to which one is empty and which is not. The criterion is defined by this callback function itself. Empty columns will not exist in the formatted table.
+	 * @param[in] getNonEmptyColumns A function that should filter columns according to which one is empty and which is not. The criterion is defined by this callback function itself. Empty columns will not exist in the formatted table. The two inputs the function takes are 
 	 * @return A string representation of `table2D`.
 	 */
 	template<typename E>
-	std::string toString(const std::vector<std::vector<E>>& table2D, std::function<std::vector<bool>(const std::vector<std::vector<E>>&, const size_t)> getNonEmptyColumns) {
+	std::string toString(const std::vector<std::vector<E>>& table2D, std::function<std::set<size_t>(const std::vector<std::vector<E>>&)> getNonEmptyColumns) {
 
 		using TableType = const std::vector<std::vector<E>>;
 
 		using namespace tabulate;
 
+		// TODO: MAKE THIS MORE GENERAL. NOW IT WILL BE ONLY FOR FSMTABLES
+
+		/* ALGORITHM:
+		* Idea: The idea is simple. Each row in the original vector table will have a corresponding row in the string table. However, some of the columns in the original table have no vale in any row. We call these "EMPTY COLUMNS". These columns should not be represented in the final string, as they will clog up the view. Therefore, we must start be determining which columns are EMPTY and which are not. Then we can put them in the string.
+		* Inputs: table2D, columnFilterFunction
+		* Steps:
+			* For every row in `table2D`:
+				* Record the index of the columns in that table that have a value (i.e., loop through every column and record those that are not empty).
+			* Take the list of columns of each row and combine it into a single list. This is the list of all columns that must be converted to string. All other columns must be ignored.
+			* Add a header row for each NON-EMPTY column.
+			* For every row in `table2D`:
+				* For every column (column index):
+					* If that column has a value within `table2D`, add it.
+					* If that column doesn't have a value or doesn't even exist within `table2D`, add empty space.
+		*/
+
 		// Helper lambdas
-		auto get_column_sizes = [](const TableType& table) {
-			std::vector<size_t> columnSizes{};
-			for (const auto& row : table) {
-				columnSizes.push_back(row.size());
-			}
 
-			return columnSizes;
-			};
-		auto filter_columns = [&table2D](const size_t maxColSize, const std::vector<bool>& colStatus, Table& fmtTable) {
-
-			using namespace tabulate;
-
-			Table::Row_t headerRow{};
-			// Fill the first row (the header row)
-			for (size_t col = 0; col < colStatus.size(); col++) {
-				bool status = colStatus.at(col);
-
-				// if the columns is empty
-				if (status == false)
-					continue;
-
-				// the columns is filled
-				headerRow.push_back(std::string{ char(col) });
-			}
-
-			fmtTable.add_row(headerRow);
-			fmtTable.row(0).format().font_style({ tabulate::FontStyle::bold }).font_color(Color::cyan);
-
-			// Fill the rest of rows
+		// Gets the number of columns in each row, i.e., the size of each row
+		auto get_column_num_in_each_row = [](const TableType& table2D) {
+			std::vector<size_t> rowSizes{};
 			for (const auto& row : table2D) {
-
-				if (row.size() == 0)
-					continue;
-
-				Table::Row_t newRow{};
-				for (size_t col = 0; col < maxColSize; col++)
-					if (colStatus.at(col))
-						newRow.push_back(fmt::format("{}", row.at(col)));
-
-				fmtTable.add_row(newRow);
+				rowSizes.push_back(row.size());
 			}
 
+			return rowSizes;
 			};
 
+		// Get the indicies of non-empty columns
+		std::set<size_t> nonEmptyColumns = getNonEmptyColumns(table2D);
+
+		// Set up the header rows
+		
 		Table fmtTable{};
+		Table::Row_t headerRow{};
 
-		if (table2D.size() == 0)
-			return fmtTable.str();
+		headerRow.push_back("State");
 
-		// Identify non-empty columns
-		std::vector<size_t> columnSizes = get_column_sizes(table2D);
-		const size_t maxColSize = *std::max_element(columnSizes.cbegin(), columnSizes.cend());
+		for (const size_t col : nonEmptyColumns)
+			headerRow.push_back(std::string{char(col)});
 
-		// sets a `true` where a column is non-empty
-		std::vector<bool> nonEmptyColumns = getNonEmptyColumns(table2D, maxColSize);
+		fmtTable.add_row(headerRow);
 
-		// Filter out columns from each row and construct the rows
-		filter_columns(maxColSize, nonEmptyColumns, fmtTable);
+		// Add the columns of each row
+		for (size_t rowIndex = 1; const auto & row : table2D) {
+			Table::Row_t currentRow{};
+
+			const size_t rowSize = row.size();
+
+			currentRow.push_back(std::to_string(rowIndex - 1));
+
+			for (const size_t col : nonEmptyColumns) {
+				
+				if (col >= row.size())
+					currentRow.push_back("");
+				else {
+					const auto it = row.at(col).begin();
+
+					if (it == row.at(col).end())
+						currentRow.push_back("");
+					else {
+						const size_t currState = *it;
+						currentRow.push_back(std::to_string(currState));
+					}
+
+				}
+
+			}
+
+			fmtTable.add_row(currentRow);
+			rowIndex++;
+		}
 
 		return fmtTable.str();
 
