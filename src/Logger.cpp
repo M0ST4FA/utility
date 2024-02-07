@@ -4,7 +4,7 @@
 namespace m0st4fa {
 
 	// IMPLEMENTATIONS OF Logger FUNCTIONS
-	void Logger::log(LoggerInfo loggerInfo, const std::string& message, std::source_location location) const
+	void Logger::log(const LoggerInfo& loggerInfo, const std::string& message, std::source_location location) const
 	{
 
 		// if logging a debug message

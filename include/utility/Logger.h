@@ -59,7 +59,7 @@ namespace m0st4fa {
 
 	public:
 
-		void log(const LoggerInfo, const std::string&, std::source_location = std::source_location::current()) const;
+		void log(const LoggerInfo&, const std::string&, std::source_location = std::source_location::current()) const;
 		
 		void logDebug(const std::string&, std::source_location = std::source_location::current()) const;
 
